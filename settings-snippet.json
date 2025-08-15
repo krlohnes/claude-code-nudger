@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/claude-env-nudger.sh",
+            "description": "Nudge Claude to keep working"
+          }
+        ]
+      }
+    ]
+  }
+}
