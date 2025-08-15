@@ -1,23 +1,57 @@
-# Claude Code Task Nudger
+# Claude Code Nudger
 
-A Claude Code hook that reminds Claude to keep working when there are still tasks to complete.
+A simple Claude Code hook that gives Claude a gentle nudge to keep working when it stops responding. No fancy logic - just a friendly reminder that says "Hey, you sure you're done?"
 
 ## What it does
 
-This tool hooks into Claude Code's "Stop" event and checks if there's still work to be done. If it finds incomplete tasks, it nudges Claude to continue working.
+This tool hooks into Claude Code's "Stop" event and automatically sends a nudge message asking Claude to consider if there's more work to be done. It's like having a project manager who taps you on the shoulder and asks "What's next?"
 
 ## How it works
 
-- Monitors Claude Code's responses for task completion signals
-- Checks for active todos, failed tests, or incomplete implementations
-- Sends a gentle reminder when work remains unfinished
+- Triggers every time Claude stops responding in a conversation
+- Sends up to 3 nudges per project session
+- Each project gets its own nudge counter (won't interfere with other projects)
+- Auto-resets the counter after 10 minutes of inactivity
+- State files are stored in `~/.claude/` with project-specific naming
 
 ## Installation
 
-1. Add the hook configuration to your Claude Code settings
-2. Make the nudger script executable
-3. Customize the nudging behavior as needed
+### Easy Install (Recommended)
+```bash
+./install.sh
+```
 
-## Configuration
+### Manual Install
+1. **Copy the script:**
+   ```bash
+   mkdir -p ~/.claude/hooks
+   cp claude-env-nudger.sh ~/.claude/hooks/
+   chmod +x ~/.claude/hooks/claude-env-nudger.sh
+   ```
 
-The tool is configured via Claude Code's hooks system in your settings file.
+2. **Add to Claude Code settings** (`~/.claude/settings.json`):
+   ```json
+   {
+     "hooks": {
+       "Stop": [
+         {
+           "matcher": ".*",
+           "hooks": [
+             {
+               "type": "command",
+               "command": "$HOME/.claude/hooks/claude-env-nudger.sh",
+               "description": "Nudge Claude to keep working"
+             }
+           ]
+         }
+       ]
+     }
+   }
+   ```
+
+## Management Commands
+
+- **Reset nudging for current project:** `rm ~/.claude/nudge_state_*`
+- **Disable nudging for current project:** `touch ~/.claude/stop_nudge_*`
+- **Reset all projects:** `rm ~/.claude/nudge_state_* ~/.claude/stop_nudge_*`
+- **Uninstall:** `rm ~/.claude/hooks/claude-env-nudger.sh`

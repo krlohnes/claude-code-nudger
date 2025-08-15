@@ -61,4 +61,4 @@ echo "Consider:"
 echo "  - \"Is there anything else I should work on?\""
 echo "  - \"What's next?\""
 
-exit 1
+exit 0
