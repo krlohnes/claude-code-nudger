@@ -1,0 +1,58 @@
+{
+  "prompts": {
+    "header": "🤖 Hey Claude, before you're done: (Nudge {{nudge_count}}/{{max_nudges}})",
+    "project_line": "   Project: {{project_name}}",
+    "required_actions": [
+      "Did you actually test your work?",
+      "Please check task-tree MCP server to see if there are any tasks left for the current session if you are truly done with the current task",
+      "Ask the user: 'What would you like me to work on next?'",
+      "Do NOT make up additional tasks",
+      "Wait for user direction"
+    ],
+    "footer": "To stop nudging: touch \"{{done_file}}\""
+  },
+  "templates": {
+    "polite": {
+      "header": "🤖 Hi Claude, just a gentle reminder: (Nudge {{nudge_count}}/{{max_nudges}})",
+      "project_line": "   Working on: {{project_name}}",
+      "required_actions": [
+        "Have you tested your changes?",
+        "Could you check the task-tree MCP server for remaining tasks?",
+        "Would you mind asking: 'What would you like me to work on next?'",
+        "Please avoid creating additional tasks",
+        "Thank you for waiting for user direction"
+      ],
+      "footer": "To disable these reminders: touch \"{{done_file}}\""
+    },
+    "aggressive": {
+      "header": "🚨 CLAUDE ALERT: You're not done yet! (Nudge {{nudge_count}}/{{max_nudges}})",
+      "project_line": "   ACTIVE PROJECT: {{project_name}}",
+      "required_actions": [
+        "DID YOU TEST YOUR DAMN CODE?",
+        "CHECK THE TASK-TREE MCP SERVER FOR REMAINING WORK",
+        "ASK THE USER: 'What would you like me to work on next?'",
+        "STOP MAKING UP BUSYWORK",
+        "WAIT FOR ACTUAL USER INSTRUCTIONS"
+      ],
+      "footer": "STOP THIS MADNESS: touch \"{{done_file}}\""
+    },
+    "minimal": {
+      "header": "🤖 (Nudge {{nudge_count}}/{{max_nudges}})",
+      "project_line": "{{project_name}}",
+      "required_actions": [
+        "Test?",
+        "Check task-tree?",
+        "Ask: 'What next?'"
+      ],
+      "footer": "Stop: touch \"{{done_file}}\""
+    }
+  },
+  "settings": {
+    "default_template": "default",
+    "use_template_override_env": true,
+    "config_locations": [
+      "~/.claude/nudger-config.json",
+      "./nudger-config.json"
+    ]
+  }
+}
