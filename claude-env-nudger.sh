@@ -62,12 +62,14 @@ if [ "$NUDGE_COUNT" -gt "$MAX_NUDGES" ]; then
     exit 0
 fi
 
-echo "🤖 Hey Claude, are you sure you're done? (Nudge $NUDGE_COUNT/$MAX_NUDGES)" >&2
+echo "🤖 Hey Claude, before you're done: (Nudge $NUDGE_COUNT/$MAX_NUDGES)" >&2
 echo "   Project: $PROJECT_NAME" >&2
 echo "" >&2
-echo "Consider:" >&2
-echo "  - \"Is there anything else I should work on?\"" >&2
-echo "  - \"What's next?\"" >&2
+echo "Required actions:" >&2
+echo "  1. Did you actually test your work?" >&2
+echo "  2. Ask the user: 'What would you like me to work on next?'" >&2
+echo "  3. Do NOT make up additional tasks" >&2
+echo "  4. Wait for user direction" >&2
 echo "" >&2
 echo "To stop nudging: touch \"$DONE_FILE\"" >&2
 
