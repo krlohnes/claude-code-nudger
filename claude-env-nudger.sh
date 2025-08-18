@@ -14,6 +14,7 @@ fi
 # State files specific to this Claude Code session
 NUDGE_FILE="$HOME/.claude/nudge_state_${SESSION_ID}"
 STOP_FILE="$HOME/.claude/stop_nudge_${SESSION_ID}"
+DONE_FILE="$HOME/.claude/session_complete_${SESSION_ID}"
 MAX_NUDGES=3
 
 # Create .claude directory if it doesn't exist
@@ -23,6 +24,13 @@ mkdir -p "$HOME/.claude"
 if [ -f "$STOP_FILE" ]; then
     echo "✅ Nudging disabled for project: $PROJECT_NAME"
     echo "   To re-enable: rm \"$STOP_FILE\""
+    exit 0
+fi
+
+# Check if Claude has marked the session as complete
+if [ -f "$DONE_FILE" ]; then
+    echo "✅ Session marked complete by Claude for: $PROJECT_NAME"
+    echo "   File will be auto-deleted on next user prompt"
     exit 0
 fi
 
@@ -54,11 +62,13 @@ if [ "$NUDGE_COUNT" -gt "$MAX_NUDGES" ]; then
     exit 0
 fi
 
-echo "🤖 Hey Claude, are you sure you're done? (Nudge $NUDGE_COUNT/$MAX_NUDGES)"
-echo "   Project: $PROJECT_NAME"
-echo
-echo "Consider:"
-echo "  - \"Is there anything else I should work on?\""
-echo "  - \"What's next?\""
+echo "🤖 Hey Claude, are you sure you're done? (Nudge $NUDGE_COUNT/$MAX_NUDGES)" >&2
+echo "   Project: $PROJECT_NAME" >&2
+echo "" >&2
+echo "Consider:" >&2
+echo "  - \"Is there anything else I should work on?\"" >&2
+echo "  - \"What's next?\"" >&2
+echo "" >&2
+echo "To stop nudging: touch \"$DONE_FILE\"" >&2
 
-exit 0
+exit 2

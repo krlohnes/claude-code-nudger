@@ -37,6 +37,62 @@ echo "📋 Installing nudger script..."
 cp claude-env-nudger.sh "$HOOKS_DIR/"
 chmod +x "$HOOKS_DIR/claude-env-nudger.sh"
 
+# Handle UserPromptSubmit hook for session complete cleanup
+PROMPT_HOOK="$HOOKS_DIR/user-prompt-submit"
+echo "🔧 Setting up session complete cleanup..."
+
+if [ -f "$PROMPT_HOOK" ]; then
+    echo "ℹ️  Found existing UserPromptSubmit hook - patching it..."
+    # Check if our cleanup code is already there
+    if grep -q "session_complete" "$PROMPT_HOOK" 2>/dev/null; then
+        echo "✅ Session complete cleanup already configured"
+    else
+        echo "➕ Adding session complete cleanup to existing hook..."
+        # Insert our cleanup code after the shebang
+        sed -i.bak '2i\
+\
+# Clean up any session complete files (for nudger tool)\
+if [ -n "$CLAUDE_PROJECT_DIR" ]; then\
+    SESSION_ID=$(echo "$CLAUDE_PROJECT_DIR" | sed '\''s/[^a-zA-Z0-9]/_/g'\'')\
+else\
+    SESSION_ID=$(pwd | sed '\''s/[^a-zA-Z0-9]/_/g'\'')\
+fi\
+DONE_FILE="$HOME/.claude/session_complete_${SESSION_ID}"\
+NUDGE_FILE="$HOME/.claude/nudge_state_${SESSION_ID}"\
+if [ -f "$DONE_FILE" ]; then\
+    rm "$DONE_FILE"\
+    # Reset nudge counter when user sends new prompt after session completion\
+    rm "$NUDGE_FILE" 2>/dev/null\
+fi\
+' "$PROMPT_HOOK"
+        echo "✅ Patched existing UserPromptSubmit hook"
+    fi
+else
+    echo "📝 Creating new UserPromptSubmit hook..."
+    cat > "$PROMPT_HOOK" << 'EOF'
+#!/bin/bash
+
+# Clean up any session complete files (for nudger tool)
+if [ -n "$CLAUDE_PROJECT_DIR" ]; then
+    SESSION_ID=$(echo "$CLAUDE_PROJECT_DIR" | sed 's/[^a-zA-Z0-9]/_/g')
+else
+    SESSION_ID=$(pwd | sed 's/[^a-zA-Z0-9]/_/g')
+fi
+DONE_FILE="$HOME/.claude/session_complete_${SESSION_ID}"
+NUDGE_FILE="$HOME/.claude/nudge_state_${SESSION_ID}"
+if [ -f "$DONE_FILE" ]; then
+    rm "$DONE_FILE"
+    # Reset nudge counter when user sends new prompt after session completion
+    rm "$NUDGE_FILE" 2>/dev/null
+fi
+
+# Exit successfully
+exit 0
+EOF
+    chmod +x "$PROMPT_HOOK"
+    echo "✅ Created UserPromptSubmit hook"
+fi
+
 # Check if settings file exists
 SETTINGS_FILE="$HOME/.claude/settings.json"
 BACKUP_FILE="$HOME/.claude/settings.json.backup-$(date +%Y%m%d-%H%M%S)"
@@ -121,6 +177,15 @@ try:
         }]
     }]
     
+    # Add UserPromptSubmit hook if it doesn't exist
+    if 'UserPromptSubmit' not in settings['hooks']:
+        settings['hooks']['UserPromptSubmit'] = [{
+            'hooks': [{
+                'type': 'command',
+                'command': '$HOOKS_DIR/user-prompt-submit'
+            }]
+        }]
+    
     with open('$SETTINGS_FILE', 'w') as f:
         json.dump(settings, f, indent=2)
     
@@ -175,6 +240,16 @@ else
             "type": "command",
             "command": "$HOOKS_DIR/claude-env-nudger.sh",
             "description": "Nudge Claude to keep working"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOOKS_DIR/user-prompt-submit"
           }
         ]
       }
