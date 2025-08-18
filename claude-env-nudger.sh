@@ -37,7 +37,18 @@ fi
 # Get current nudge count
 if [ -f "$NUDGE_FILE" ]; then
     NUDGE_COUNT=$(cat "$NUDGE_FILE")
-    TIMESTAMP=$(stat -f %m "$NUDGE_FILE" 2>/dev/null || stat -c %Y "$NUDGE_FILE" 2>/dev/null || echo 0)
+    # Get file modification time (cross-platform)
+    # Check if we're on macOS (has stat -f) or Linux (has stat -c)
+    if stat -f %m "$NUDGE_FILE" >/dev/null 2>&1; then
+        # macOS/BSD style
+        TIMESTAMP=$(stat -f %m "$NUDGE_FILE")
+    elif stat -c %Y "$NUDGE_FILE" >/dev/null 2>&1; then
+        # Linux/GNU style
+        TIMESTAMP=$(stat -c %Y "$NUDGE_FILE")
+    else
+        # Fallback if stat is missing or broken
+        TIMESTAMP=0
+    fi
     NOW=$(date +%s)
     
     # Reset counter if it's been more than 10 minutes since last nudge
