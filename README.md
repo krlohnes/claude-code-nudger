@@ -49,9 +49,78 @@ This tool hooks into Claude Code's "Stop" event and automatically sends a nudge 
    }
    ```
 
+## Customizing Nudge Prompts
+
+The nudger now supports configurable prompts! You can customize the messages to match your preferred style.
+
+### Configuration File Locations
+
+The nudger looks for configuration files in this order:
+1. `~/.claude/nudger-config.json` (global config)
+2. `./nudger-config.json` (project-specific config)
+
+### Quick Templates
+
+Use environment variables for quick template switching:
+
+```bash
+# Polite nudging
+export NUDGER_TEMPLATE=polite
+
+# Aggressive nudging  
+export NUDGER_TEMPLATE=aggressive
+
+# Minimal nudging
+export NUDGER_TEMPLATE=minimal
+
+# Back to default
+export NUDGER_TEMPLATE=default
+```
+
+### Custom Configuration
+
+Create a `nudger-config.json` file to fully customize your prompts:
+
+```json
+{
+  "prompts": {
+    "header": "🤖 Hey Claude, before you're done: (Nudge {{nudge_count}}/{{max_nudges}})",
+    "project_line": "   Project: {{project_name}}",
+    "required_actions": [
+      "Did you actually test your work?",
+      "Please check task-tree MCP server to see if there are any tasks left for the current session if you are truly done with the current task",
+      "Ask the user: 'What would you like me to work on next?'",
+      "Do NOT make up additional tasks",
+      "Wait for user direction"
+    ],
+    "footer": "To stop nudging: touch \"{{done_file}}\""
+  }
+}
+```
+
+### Template Variables
+
+Available template variables:
+- `{{nudge_count}}` - Current nudge number
+- `{{max_nudges}}` - Maximum nudges allowed
+- `{{project_name}}` - Current project name
+- `{{done_file}}` - Path to session completion file
+
+### Built-in Templates
+
+The configuration file includes several built-in templates:
+
+- **default**: Standard nudging messages
+- **polite**: Gentler, more courteous language
+- **aggressive**: More forceful reminders (perfect for tight deadlines!)
+- **minimal**: Short and sweet
+
+Copy `nudger-config.json` to `~/.claude/` to use globally, or keep it in your project directory for project-specific customization.
+
 ## Management Commands
 
 - **Reset nudging for current project:** `rm ~/.claude/nudge_state_*`
 - **Disable nudging for current project:** `touch ~/.claude/stop_nudge_*`
 - **Reset all projects:** `rm ~/.claude/nudge_state_* ~/.claude/stop_nudge_*`
+- **Test configuration:** `./test-configurable-nudger.sh`
 - **Uninstall:** `rm ~/.claude/hooks/claude-env-nudger.sh`
